@@ -10,7 +10,6 @@ class Room(models.Model):
     p_2 = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('player 2'))
     p_1_shoot_ts = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('player 1 shoot ts'))
     p_2_shoot_ts = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('player 2 shoot ts'))
-    winner = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('winner'))
 
     @property
     def has_empty_space(self):
@@ -20,3 +19,6 @@ class Room(models.Model):
     def name(self):
         return ''.join([i for i in str(self.id) if str(i).isalnum()])
 
+    @property
+    def can_start(self):
+        return self.p_1 and self.p_2 and self.p_2_shoot_ts == self.p_1_shoot_ts is None
