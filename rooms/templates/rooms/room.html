@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+        <h1>Multiplayer</h1>
+
+        <input type="text" id="data" name="data" required>
+        <button id="send_btn" onclick="sendData()">Send</button>
+        <div id="container">
+
+        </div>
+
+<script>
+    let url = `ws://${window.location.host}/ws/socket-server/`
+    const chatSocket = new WebSocket(url)
+
+    chatSocket.onmessage = function (e){
+        let data = e.data
+        console.log(data)
+        document.getElementById('container').insertAdjacentHTML('beforeend','<p>'+data+'    '+new Date().getTime()+'</p>')
+    }
+
+   function sendData(){
+        chatSocket.send(document.getElementById('data').value)
+       }
+</script>
+</body>
+</html>
