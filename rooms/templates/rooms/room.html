@@ -5,27 +5,49 @@
     <title>Title</title>
 </head>
 <body>
-        <h1>Multiplayer</h1>
+<h1>Multiplayer</h1>
 
-        <input type="text" id="data" name="data" required>
-        <button id="send_btn" onclick="sendData()">Send</button>
-        <div id="container">
+<input type="text" id="data" name="data" required>
+<button id="send_btn" onclick="sendData()">Send</button>
+<div id="container">
 
-        </div>
+</div>
 
 <script>
     let url = `ws://${window.location.host}/ws/socket-server/`
     const chatSocket = new WebSocket(url)
-
-    chatSocket.onmessage = function (e){
-        let data = e.data
+    let user_id = ''
+    chatSocket.onmessage = function (e) {
+        let data = JSON.parse(e.data)
         console.log(data)
-        document.getElementById('container').insertAdjacentHTML('beforeend','<p>'+data+'    '+new Date().getTime()+'</p>')
+        if (data.type === 'creds'){
+            user_id = data.message
+        }
+        if (data.type === 'data'){
+            document.getElementById('container').insertAdjacentHTML('beforeend', '<p>' + data.message + '    ' + new Date().getTime() + '</p>')
+        }
+
     }
 
-   function sendData(){
-        chatSocket.send(document.getElementById('data').value)
-       }
+    function sendData() {
+        chatSocket.send(JSON.stringify(
+            {'user_id':user_id,
+            'message':  document.getElementById('data').value
+            }
+
+        ))
+    }
+
+    function makeid(length) {
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
+    }
 </script>
 </body>
 </html>

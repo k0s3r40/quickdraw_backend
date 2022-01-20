@@ -16,3 +16,7 @@ class Room(models.Model):
     def has_empty_space(self):
         return not all([self.p_1, self.p_2])
 
+    @property
+    def name(self):
+        return ''.join([i for i in str(self.id) if str(i).isalnum()])
+
