@@ -26,13 +26,17 @@ class MultiplayerHandler(WebsocketConsumer):
             self.channel_name
         )
         self.accept()
-        self.user_id = str(uuid.uuid4())
+        self.user_id = 0
         if self.room.p_1 is None:
+            self.user_id = 'p_1'
             self.room.p_1 = self.user_id
         else:
+            self.user_id = 'p_2'
             self.room.p_2 = self.user_id
+
         self.room.save()
         self.send(json.dumps({'type': 'creds', 'message': self.user_id, 'room_id': self.room.name}))
+        self.x = None
         if self.room.can_start:
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
@@ -46,31 +50,54 @@ class MultiplayerHandler(WebsocketConsumer):
             self.x.start()
 
     def receive(self, text_data=None, bytes_data=None):
-        if json.loads(text_data)['message'] == "S":
-            if self.x.is_alive() is False:
-                async_to_sync(self.channel_layer.group_send)(
-                    self.room_group_name,
-                    {
-                        'type': 'chat_message',
-                        'message': json.loads(text_data)['user_id'] + ' Has won the game'
-                    }
-                )
-            else:
-                async_to_sync(self.channel_layer.group_send)(
-                    self.room_group_name,
-                    {
-                        'type': 'chat_message',
-                        'message': json.loads(text_data)['user_id'] + ' Has shot prematurely and Lost the game'
-                    }
-                )
+        print('winner', self.room.shoot_winner)
+        print('p_1', self.room.p_1_shoot_ts)
+        print('p_2', self.room.p_2_shoot_ts)
+        if self.room.shoot_winner:
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': f'Winner is {self.room.shoot_winner}'
+                }
+            )
+        else:
+            if json.loads(text_data)['message'] == "S":
+                if self.x and self.x.is_alive() is False:
+                    if self.room.p_1 == json.loads(text_data)['user_id']:
+                        self.room.p_1_shoot_ts = datetime.now().timestamp() * 1000
+                    else:
+                        self.room.p_2_shoot_ts = datetime.now().timestamp() * 1000
+                    self.room.save()
+                    async_to_sync(self.channel_layer.group_send)(
+                        self.room_group_name,
+                        {
+                            'type': 'chat_message',
+                            'message': f'Winner is {self.room.shoot_winner}'
+                        }
+                    )
 
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': text_data
-            }
-        )
+                else:
+
+                    if self.room.p_1 == json.loads(text_data)['user_id']:
+                        self.room.winner = self.room.p_2
+                    else:
+                        self.room.winner = self.room.p_1
+                    self.room.save()
+                    async_to_sync(self.channel_layer.group_send)(
+                        self.room_group_name,
+                        {
+                            'type': 'chat_message',
+                            'message': f'Winner is {self.room.shoot_winner}'
+                        }
+                    )
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': text_data
+                }
+            )
 
     def chat_message(self, event):
         message = event['message']

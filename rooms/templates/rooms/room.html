@@ -22,6 +22,7 @@
         console.log(data)
         if (data.type === 'creds'){
             user_id = data.message
+             document.getElementById('container').insertAdjacentHTML('beforeend', '<p>' + data.message + '    ' + new Date().getTime() + '</p>')
         }
         if (data.type === 'data'){
             document.getElementById('container').insertAdjacentHTML('beforeend', '<p>' + data.message + '    ' + new Date().getTime() + '</p>')
