@@ -42,7 +42,7 @@ class MultiplayerHandler(WebsocketConsumer):
                 self.room_group_name,
                 {
                     'type': 'chat_message',
-                    'message': 'The battle is about to start'
+                    'message': f'The battle is about to start {self.room.id}'
                 }
             )
 
@@ -65,32 +65,32 @@ class MultiplayerHandler(WebsocketConsumer):
             if json.loads(text_data)['message'] == "S":
                 if self.x and self.x.is_alive() is False:
                     if self.room.p_1 == json.loads(text_data)['user_id']:
-                        self.room.p_1_shoot_ts = datetime.now().timestamp() * 1000
+                        winner = 'p_1'
                     else:
-                        self.room.p_2_shoot_ts = datetime.now().timestamp() * 1000
-                    self.room.save()
+                        winner = 'p_2'
                     async_to_sync(self.channel_layer.group_send)(
                         self.room_group_name,
                         {
                             'type': 'chat_message',
-                            'message': f'Winner is {self.room.shoot_winner}'
+                            'message': f'Winner is ff {winner}'
                         }
                     )
-
+                    print('Case 1')
                 else:
-
+                    print(json.loads(text_data)['user_id'])
                     if self.room.p_1 == json.loads(text_data)['user_id']:
-                        self.room.winner = self.room.p_2
+                        winner = 'p_2'
                     else:
-                        self.room.winner = self.room.p_1
-                    self.room.save()
+                        winner = 'p_1'
+
                     async_to_sync(self.channel_layer.group_send)(
                         self.room_group_name,
                         {
                             'type': 'chat_message',
-                            'message': f'Winner is {self.room.shoot_winner}'
+                            'message': f'Winner ff is {winner}'
                         }
                     )
+
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
                 {
@@ -113,3 +113,10 @@ class MultiplayerHandler(WebsocketConsumer):
                 }
             )
             time.sleep(1)
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': "SHOOT!!!"
+            }
+        )

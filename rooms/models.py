@@ -29,14 +29,15 @@ class Room(models.Model):
             print('return self.winner')
             return self.winner
         if self.p_1_shoot_ts:
+            print('check p 1')
             if self.p_2_shoot_ts:
                 if self.p_1_shoot_ts < self.p_2_shoot_ts:
                     print('return self.p_1')
                     return self.p_1
-                else:
-                    return self.p_2
+
+            return self.p_2
         if self.p_2_shoot_ts:
             if self.p_1_shoot_ts:
                 if self.p_2_shoot_ts < self.p_1_shoot_ts:
                     return self.p_2
-                return self.p_1
+            return self.p_1
